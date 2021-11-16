@@ -38,8 +38,9 @@ jobs:
           node-version: '14'
 
       - name: Local pre-build update/fixes
-        working-directory: ./wiki
+        #working-directory: ./wiki
         run: |
+           pwd
            ls -lR .
            ls -lR ..
            cp -p package.json package.json.orig
