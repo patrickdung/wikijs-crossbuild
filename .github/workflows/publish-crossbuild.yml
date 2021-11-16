@@ -16,23 +16,21 @@ jobs:
 
       - name: Fetch branch name of latest release
         run: |
-          curl -sL https://api.github.com/repos/Requarks/wikijs/releases/latest | \
+          curl -sL https://api.github.com/repos/Requarks/wiki/releases/latest | \
           jq -r ".tag_name" > /tmp/wikijs-latest-branch-name
           echo "REMOTE_BRANCH_NAME=$(cat /tmp/wikijs-latest-branch-name)" >> $GITHUB_ENV
 
-      - name: Fetch commit digest of latest release
-        run: |
-          curl -sL https://api.github.com/repos/Requarks/wikijs/releases/latest | \
-          jq -r ".target_commitish" > /tmp/wikijs-latest-commit-digest
-          echo "REMOTE_COMMIT_DIGEST=$(cat /tmp/wikijs-latest-commit-digest)" >> $GITHUB_ENV
+      #- name: Fetch commit digest of latest release
+      #  run: |
+      #    curl -sL https://api.github.com/repos/Requarks/wiki/releases/latest | \
+      #    jq -r ".target_commitish" > /tmp/wikijs-latest-commit-digest
+      #    echo "REMOTE_COMMIT_DIGEST=$(cat /tmp/wikijs-latest-commit-digest)" >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v2
-        # Cannot provide a tag and pull the repo
-        # provide a SHA commit digest instead
         with:
           repository: Requarks/wiki
-          ref: ${{ env.REMOTE_COMMIT_DIGEST }}
+          ref: ${{ env.REMOTE_BRANCH_NAME }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
