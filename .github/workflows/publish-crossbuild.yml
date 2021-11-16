@@ -26,11 +26,12 @@ jobs:
       #    jq -r ".target_commitish" > /tmp/wikijs-latest-commit-digest
       #    echo "REMOTE_COMMIT_DIGEST=$(cat /tmp/wikijs-latest-commit-digest)" >> $GITHUB_ENV
 
-      - name: Checkout repository
+      - name: Checkout repository (wikijs source code)
         uses: actions/checkout@v2
         with:
           repository: Requarks/wiki
           ref: ${{ env.REMOTE_BRANCH_NAME }}
+          path: wiki
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -38,8 +39,7 @@ jobs:
           node-version: '14'
 
       - name: Local pre-build update/fixes
-        ## Not checking out as /wiki in above
-        ##working-directory: ./wiki
+        working-directory: ./wiki
         run: |
            #pwd
            #ls -lR .
@@ -51,6 +51,12 @@ jobs:
            cat package.json
            yarn upgrade nodemailer@6.4.18 objection@2.2.18 apollo-server@2.25.3 xss@1.0.10 json-schema@0.4.0 nth-check@2.0.1 highlight.js@10.7.3
            if [ -e yarn-error.log ]; then cat yarn-error.log; fi
+
+      - name: Checkout repository (to get cross build Dockerfile)
+        uses: actions/checkout@v2
+        with:
+          repository: patrickdung/wikijs-crossbuild
+          ref: main
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -69,7 +75,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           ## Not using ./wiki
-          ##context: ./wiki
+          context: ./wiki
           ##build-args: |
           ##  ARCH=${{ env.TO_BE_FIXED }}
           platforms: linux/amd64,linux/arm64
