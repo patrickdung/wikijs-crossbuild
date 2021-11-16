@@ -50,7 +50,7 @@ jobs:
            rm pkg-temp.json
            cat package.json
            yarn upgrade nodemailer@6.4.18 objection@2.2.18 apollo-server@2.25.3 xss@1.0.10 json-schema@0.4.0 nth-check@2.0.1 highlight.js@10.7.3
-           cat yarn-error.log
+           if [ -e yarn-error.log ]; then cat yarn-error.log; fi
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
