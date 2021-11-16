@@ -35,11 +35,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14.x'
+          node-version: '14'
 
       - name: Local pre-build update/fixes
         working-directory: ./wiki
         run: |
+           ls -lR .
+           ls -lR ..
            cp -p package.json package.json.orig
            mv package.json pkg-temp.json
            jq -r docker/build-push-action'.dev |= false' pkg-temp.json | sed -E -e "s|\"version\": \"2.0.0\",|\"version\": \"${RELEASE_VERSION}\",|" -e 's|"releaseDate": "2019-01-01T01:01:01.000Z",|"releaseDate": "2021-11-15T16:00:00.000Z",|' > package.json
