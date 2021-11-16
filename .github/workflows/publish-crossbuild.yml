@@ -3,7 +3,7 @@ name: Release using cross build
 on:
   push:
     branches:
-      - main
+      - test
     #paths:
     #  - 'release-versions/*'
 
@@ -15,49 +15,11 @@ jobs:
 
     steps:
 
-      - name: Fetch branch name of latest release
-        run: |
-          curl -sL https://api.github.com/repos/Requarks/wiki/releases/latest | \
-          jq -r ".tag_name" > /tmp/wikijs-latest-branch-name
-          echo "REMOTE_BRANCH_NAME=$(cat /tmp/wikijs-latest-branch-name)" >> $GITHUB_ENV
-
-      #- name: Fetch commit digest of latest release
-      #  run: |
-      #    curl -sL https://api.github.com/repos/Requarks/wiki/releases/latest | \
-      #    jq -r ".target_commitish" > /tmp/wikijs-latest-commit-digest
-      #    echo "REMOTE_COMMIT_DIGEST=$(cat /tmp/wikijs-latest-commit-digest)" >> $GITHUB_ENV
-
       - name: Checkout repository (to get cross build Dockerfile)
         uses: actions/checkout@v2
         with:
           # repository: patrickdung/wikijs-crossbuild
           ref: main
-
-      - name: Checkout repository (wikijs source code)
-        uses: actions/checkout@v2
-        with:
-          repository: Requarks/wiki
-          ref: ${{ env.REMOTE_BRANCH_NAME }}
-          path: wiki
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: Local pre-build update/fixes
-        working-directory: ./wiki
-        run: |
-           #pwd
-           #ls -lR .
-           ls -lR ..
-           cp -p package.json package.json.orig
-           mv package.json pkg-temp.json
-           jq -r '.dev |= false' pkg-temp.json | sed -E -e "s|\"version\": \"2.0.0\",|\"version\": \"${RELEASE_VERSION}\",|" -e 's|"releaseDate": "2019-01-01T01:01:01.000Z",|"releaseDate": "2021-11-15T16:00:00.000Z",|' > package.json
-           rm pkg-temp.json
-           cat package.json
-           yarn upgrade nodemailer@6.4.18 objection@2.2.18 apollo-server@2.25.3 xss@1.0.10 json-schema@0.4.0 nth-check@2.0.1 highlight.js@10.7.3
-           if [ -e yarn-error.log ]; then cat yarn-error.log; fi
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -77,10 +39,10 @@ jobs:
         # ./Dockerfile is in the upper directory
         # ./wiki is the wikijs source code repo
         with:
-          context: ./wiki
-          file: ./Dockerfile
+          #context: ./wiki
+          #file: ./Dockerfile
           ##build-args: |
           ##  ARCH=${{ env.TO_BE_FIXED }}
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: registry.gitlab.com/patrickdung/wikijs:${{ env.REMOTE_BRANCH_NAME }}
+          tags: registry.gitlab.com/patrickdung/wikijs:${{ env.REMOTE_BRANCH_NAME }}-test
