@@ -52,7 +52,7 @@ RUN set -eux && \
 FROM docker.io/node:16-bullseye-slim
 #LABEL maintainer="requarks.io"
 
-ARG ARCH=${TARGETARCH:-$ARCH}
+##ARG ARCH=${TARGETARCH:-$ARCH}
 
 #RUN apk add bash curl git openssh gnupg sqlite --no-cache && \
 # apk openssh <> deb openssh-client
@@ -88,11 +88,14 @@ VOLUME ["/wiki/data/content"]
 EXPOSE 3000
 EXPOSE 3443
 
+RUN if [ -e /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 ] ; then ln -s /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 /usr/lib/libjemalloc.so.2 ; fi
+RUN if [ -e /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 ] ; then ln -s /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 /  usr/lib/libjemalloc.so.2 ; fi
+
 # For x86_64
 #ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
 # For arm64
 #ENV LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libjemalloc.so.2
-ENV LD_PRELOAD=/usr/lib/$ARCH-linux-gnu/libjemalloc.so.2
+ENV LD_PRELOAD=/usr/lib/libjemalloc.so.2
 ENV NODE_ENV="production"
 
 # HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 CMD curl -f http://localhost:3000/healthz
