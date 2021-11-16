@@ -45,4 +45,4 @@ jobs:
           ##  ARCH=${{ env.TO_BE_FIXED }}
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: registry.gitlab.com/patrickdung/wikijs:${{ env.REMOTE_BRANCH_NAME }}-test
+          tags: registry.gitlab.com/patrickdung/wikijs:test
