@@ -7,7 +7,7 @@ FROM docker.io/node:16-bullseye-slim
 # TARGETARCH in BuildX gives out amd64/arm64 instead of x86_64/aarch64
 #ARG MACHINEARCH=${TARGETARCH/amd64/x86_64}
 #ARG MACHINEARCH=${TARGETARCH/amd64/aarch64}
-RUN apt-get -y update && apt-get -y install dpkg-architecture && \
+RUN apt-get -y update && apt-get -y install dpkg-dev && \
     MACHINEARCH="$(dpkg-architecture --query DEB_BUILD_GNU_CPU)"
 
 ENV DEBIAN_FRONTEND noninteractive
