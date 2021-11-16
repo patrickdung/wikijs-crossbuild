@@ -89,7 +89,7 @@ EXPOSE 3000
 EXPOSE 3443
 
 RUN if [ -e /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 ] ; then ln -s /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 /usr/lib/libjemalloc.so.2 ; fi
-RUN if [ -e /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 ] ; then ln -s /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 /  usr/lib/libjemalloc.so.2 ; fi
+RUN if [ -e /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 ] ; then ln -s /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 /usr/lib/libjemalloc.so.2 ; fi
 
 # For x86_64
 #ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
