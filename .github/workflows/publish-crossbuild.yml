@@ -1,0 +1,72 @@
+name: Release using cross build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'release-versions/*'
+jobs:
+  build-docker-images:
+    needs: publish-with-crossbuild
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+
+      - name: Fetch branch name of latest version
+        run: |
+          curl -sL https://api.github.com/repos/Requarks/wikijs/releases/latest | \
+          jq -r ".tag_name" > /tmp/wikijs-latest-branch-name
+          echo "REMOTE_BRANCH_NAME=$(cat /tmp/wikijs-latest-branch-name)" >> $GITHUB_ENV
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          repository: Requarks/wikijs
+          ref: ${{ env.REMOTE_BRANCH_NAME }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          repository: Requarks/wikijs
+          ref: ${{ env.REMOTE_BRANCH_NAME }}
+
+      - name: Local pre-build update/fixes
+        working-directory: ./wiki
+        run: |
+           cp -p package.json package.json.orig
+           mv package.json pkg-temp.json
+           jq -r docker/build-push-action'.dev |= false' pkg-temp.json | sed -E -e "s|\"version\": \"2.0.0\",|\"version\": \"${RELEASE_VERSION}\",|" -e 's|"releaseDate": "2019-01-01T01:01:01.000Z",|"releaseDate": "2021-11-15T16:00:00.000Z",|' > package.json
+           rm pkg-temp.json
+           yarn upgrade nodemailer@6.4.18 objection@2.2.18 apollo-server@2.25.3 xss@1.0.10 json-schema@0.4.0 nth-check@2.0.1 highlight.js@10.7.3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to container registry provider
+        uses: docker/login-action@v1
+        with:
+          registry: registry.gitlab.com
+          username: ${{ secrets.GITLAB_USERNAME }}
+          password: ${{ secrets.GITLAB_TOKEN }}
+
+      - name: Build and push to container registry
+        working-directory: ./wiki
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          ##build-args: |
+          ##  ARCH=${{ env.TO_BE_FIXED }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: registry.gitlab.com/patrickdung/wikijs:${{ env.REMOTE_BRANCH_NAME }}
