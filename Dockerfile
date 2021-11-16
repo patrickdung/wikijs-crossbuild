@@ -12,9 +12,9 @@ FROM docker.io/node:16-bullseye-slim
 RUN apt-get -y update && \
     apt-get -y --no-install-suggests --no-install-recommends install libjemalloc2
 
-RUN if [ "${TARGETARCH} = "amd64" ] ; then ln -s /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 /usr/lib/libjemalloc.so.2 ; fi
+RUN if [ "${TARGETARCH}" = "amd64" ] ; then ln -s /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 /usr/lib/libjemalloc.so.2 ; fi
 
-RUN if [ "${TARGETARCH} = "arm64" ] ; then ln -s /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 /usr/lib/libjemalloc.so.2 ; fi
+RUN if [ "${TARGETARCH}" = "arm64" ] ; then ln -s /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 /usr/lib/libjemalloc.so.2 ; fi
 
 ENV DEBIAN_FRONTEND noninteractive
 
