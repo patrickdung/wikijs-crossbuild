@@ -55,7 +55,7 @@ jobs:
            jq -r '.dev |= false' pkg-temp.json | sed -E -e "s|\"version\": \"2.0.0\",|\"version\": \"${RELEASE_VERSION}\",|" -e 's|"releaseDate": "2019-01-01T01:01:01.000Z",|"releaseDate": "2021-11-15T16:00:00.000Z",|' > package.json
            rm pkg-temp.json
            cat package.json
-           yarn upgrade nodemailer@6.4.18 objection@2.2.18 apollo-server@2.25.3 xss@1.0.10 json-schema@0.4.0 nth-check@2.0.1 highlight.js@10.7.3
+           #yarn upgrade nodemailer@6.4.18 objection@2.2.18 apollo-server@2.25.3 xss@1.0.10 json-schema@0.4.0 nth-check@2.0.1 highlight.js@10.7.3
            if [ -e yarn-error.log ]; then cat yarn-error.log; fi
 
       - name: Set up QEMU
@@ -75,7 +75,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./wiki
-          file: ../Dockerfile
+          file: ./Dockerfile
           ##build-args: |
           ##  ARCH=${{ env.TO_BE_FIXED }}
           platforms: linux/amd64,linux/arm64
