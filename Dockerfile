@@ -62,27 +62,25 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN set -eux && \
     apt-get -y update && \
     apt-get -y install --no-install-suggests \
-    bash curl git openssh-client gnupg sqlite3 \
-    procps vim-tiny libjemalloc2 && \
-    mkdir -p /wiki && \
-    mkdir -p /logs && \
-    mkdir -p /wiki/data/content && \
+      bash curl git openssh-client gnupg sqlite3 \
+      procps vim-tiny libjemalloc2 && \
+    mkdir -p /wiki/data/content /logs && \
     chown -R node:node /wiki /logs && \
     apt-get -y upgrade && apt-get -y autoremove && apt-get -y clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN if [ -e /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 ] ; then ln -s /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 /usr/lib/libjemalloc.so.2 ; fi
-RUN if [ -e /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 ] ; then ln -s /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 /usr/lib/libjemalloc.so.2 ; fi
+    rm -rf /var/lib/apt/lists/* && \
+    if [ -e /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 ] ; then ln -s /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 /usr/lib/libjemalloc.so.2 ; fi && \
+    if [ -e /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 ] ; then ln -s /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 /usr/lib/libjemalloc.so.2 ; fi
 
 WORKDIR /wiki
 
 COPY --chown=node:node --from=assets /wiki/assets ./assets
 COPY --chown=node:node --from=assets /wiki/node_modules ./node_modules
-COPY --chown=node:node ./server ./server
+#COPY --chown=node:node ./server ./server
 COPY --chown=node:node --from=assets /wiki/server/views ./server/views
-COPY --chown=node:node ./dev/build/config.yml ./config.yml
-COPY --chown=node:node ./package.json ./package.json
-COPY --chown=node:node ./LICENSE ./LICENSE
+#COPY --chown=node:node ./dev/build/config.yml ./config.yml
+#COPY --chown=node:node ./package.json ./package.json
+#COPY --chown=node:node ./LICENSE ./LICENSE
+COPY --chown=node:node ./server ./dev/build/config.yml ./package.json ./LICENSE ./
 
 USER node
 
