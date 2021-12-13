@@ -83,7 +83,7 @@ jobs:
            if [ -e yarn-error.log ]; then cat yarn-error.log; fi
 
       - name: Remove uncessary files
-        working-directoy: ./wiki
+        working-directory: ./wiki
         run: |
           set -eux && \
           rm -f -v \
