@@ -191,9 +191,9 @@ jobs:
       matrix:
         include:
           - arch: amd64
-            platform_image_uri: "${{needs.build-docker-image.outputs.gitlab_container_base_uri}}@${{ needs.build-docker-image.outputs.container_digest_amd64 }}"
+            platform_image_uri: "${{needs.build-docker-image.outputs.container_registry_base_uri}}@${{ needs.build-docker-image.outputs.container_digest_amd64 }}"
           - arch: arm64
-            platform_image_uri: "${{needs.build-docker-image.outputs.gitlab_container_base_uri}}@${{ needs.build-docker-image.outputs.container_digest_arm64 }}"
+            platform_image_uri: "${{needs.build-docker-image.outputs.container_registry_base_uri}}@${{ needs.build-docker-image.outputs.container_digest_arm64 }}"
     steps:
 
       - name: Set env REMOTE_BRANCH_NAME
