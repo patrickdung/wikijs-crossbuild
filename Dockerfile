@@ -83,6 +83,32 @@ COPY --chown=node:node ./LICENSE ./LICENSE
 ## Below line does not work
 ##COPY --chown=node:node ./server ./dev/build/config.yml ./package.json ./LICENSE ./
 
+# Remove un-necessary files
+RUN set -eux && \
+    rm -f -v \
+        ./node_modules/connect-session-knex/node_modules/knex/scripts/docker-compose.yml \
+        ./node_modules/connect-session-knex/node_modules/knex/scripts/stress-test/docker-compose.yml \
+        ./node_modules/cpu-features/deps/cpu_features/.github/workflows/Dockerfile \
+        ./node_modules/getos/Dockerfile \
+        ./node_modules/getos/tests/alpine/3.3/Dockerfile \
+        ./node_modules/getos/tests/debian/7.3/Dockerfile \
+        ./node_modules/getos/tests/debian/7.4/Dockerfile \
+        ./node_modules/getos/tests/debian/7.5/Dockerfile \
+        ./node_modules/getos/tests/debian/7.6/Dockerfile \
+        ./node_modules/getos/tests/fedora/20/Dockerfile \
+        ./node_modules/getos/tests/ubuntu/13.10/Dockerfile \
+        ./node_modules/getos/tests/ubuntu/14.04/Dockerfile \
+        ./node_modules/knex/scripts/docker-compose.yml \
+        ./node_modules/knex/scripts/stress-test/docker-compose.yml \
+        ./node_modules/sqlite3/Dockerfile \
+        ./node_modules/sqlite3/tools/docker/architecture/linux-arm64/Dockerfile \
+        ./node_modules/sqlite3/tools/docker/architecture/linux-arm/Dockerfile \
+        ./node_modules/ssh2-promise/pretest/docker-compose.yml \
+        ./node_modules/ssh2-promise/pretest/ssh/Dockerfile \
+        ./node_modules/ssh2/test/fixtures/id_dsa \
+        ./node_modules/ssh2/test/fixtures/id_ecdsa \
+        ./node_modules/ssh2/test/fixtures/id_rsa
+
 USER node
 
 VOLUME ["/wiki/data/content"]

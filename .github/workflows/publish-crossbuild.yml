@@ -44,7 +44,7 @@ jobs:
           echo "REMOTE_BRANCH_NAME=$(cat /tmp/wikijs-latest-branch-name)" >> $GITHUB_ENV
           echo "::set-output name=remote_branch_name::$(cat /tmp/wikijs-latest-branch-name)"
 
-      #- name: Fetch commit digest of latest release
+      # - name: Fetch commit digest of latest release
       #  run: |
       #    curl -sL https://api.github.com/repos/Requarks/wiki/releases/latest | \
       #    jq -r ".target_commitish" > /tmp/wikijs-latest-commit-digest
@@ -82,6 +82,7 @@ jobs:
            yarn upgrade apollo-server@2.25.3 apollo-server-express@2.25.3 json-schema@0.4.0 nth-check@2.0.1 highlight.js@10.7.3 node-uuid@1.4.8 ansi-regex@5.0.1 ws@7.4.6
            if [ -e yarn-error.log ]; then cat yarn-error.log; fi
 
+      # These files appear again after the container is built
       - name: Remove uncessary files
         working-directory: ./wiki
         run: |
@@ -135,8 +136,8 @@ jobs:
         with:
           context: ./wiki
           file: ./Dockerfile
-          ##build-args: |
-          ##  ARCH=${{ env.TO_BE_FIXED }}
+          # ##build-args: |
+          # ## ARCH=${{ env.TO_BE_FIXED }}
           platforms: linux/amd64,linux/arm64
           push: true
           # registry.gitlab.com/patrickdung/wikijs:${{ env.REMOTE_BRANCH_NAME }}
@@ -332,17 +333,62 @@ jobs:
           sarif_file: ./${{matrix.arch}}-container-anchore-results.sarif
           category: anchore-${{matrix.arch}}
 
-      - name: Inspect SARIF report(s)
+      - name: Scan container by Snyk
+        continue-on-error: true
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_API_TOKEN }}
+        with:
+          image: ${{matrix.platform_image_uri}}
+          args: --file=Dockerfile
+
+      - name: Rename results.sarif with architecture name
         run: |
-          echo ${{matrix.arch}}
-          cat ${{matrix.arch}}-container-trivy-results.sarif
-          cat ${{matrix.arch}}-container-anchore-results.sarif
+          mv snyk.sarif ${{matrix.arch}}-container-snyk-results.sarif
+
+      - name: Upload result to GitHub Code Scanning security tab
+        uses: github/codeql-action/upload-sarif@v1
+        if: always()
+        with:
+          sarif_file: ${{matrix.arch}}-container-snyk-results.sarif
+
+      - name: Sysdig Secure Inline Scan
+        id: scan
+        uses: sysdiglabs/scan-action@v3
+        with:
+          # Tag of the image to analyse
+          image-tag: "${{matrix.platform_image_uri}}"
+          sysdig-secure-token: ${{ secrets.SYSDIG_SECURE_TOKEN}}
+          # Sysdig secure endpoint. Please read: https://docs.sysdig.com/en/docs/administration/saas-regions-and-ip-ranges/
+          sysdig-secure-url: https://app.au1.sysdig.com
+          dockerfile-path: ./Dockerfile
+          input-type: docker-daemon
+          ignore-failed-scan: true
+          # Sysdig inline scanner requires privileged rights
+          run-as-user: root
+
+      - name: Rename Sysdig sarif with architecture name
+        run: |
+          mv ${{ steps.scan.outputs.sarifReport }} ${{matrix.arch}}-container-sysdig-results.sarif
+
+      - name: Upload Sysdig SARIF report to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        if: always()
+        with:
+          sarif_file: '${{matrix.arch}}-container-sysdig-results.sarif'
+          category: sysdig-${{matrix.arch}}
+
+      # - name: Inspect SARIF report(s)
+      #  run: |
+      #    echo ${{matrix.arch}}
+      #    cat ${{matrix.arch}}-container-trivy-results.sarif
+      #    cat ${{matrix.arch}}-container-anchore-results.sarif
 
       - name: Upload SARIF reports to artifacts
         uses: actions/upload-artifact@v2
         with:
           name: "SARIF reports when containers are built"
-          path: |
             # #${{matrix.arch}}-trivy-results.sarif
             # #${{ steps.scan-by-anchore.outputs.sarif }}
+          path: |
             ./*.sarif
