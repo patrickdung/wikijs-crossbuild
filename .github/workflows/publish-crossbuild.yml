@@ -40,14 +40,14 @@ jobs:
         id: get-remote-branch-name
         run: |
           curl -sL https://api.github.com/repos/Requarks/wiki/releases/latest | \
-          jq -r ".tag_name" > /tmp/wikijs-latest-branch-name
+            jq -r ".tag_name" > /tmp/wikijs-latest-branch-name
           echo "REMOTE_BRANCH_NAME=$(cat /tmp/wikijs-latest-branch-name)" >> $GITHUB_ENV
           echo "::set-output name=remote_branch_name::$(cat /tmp/wikijs-latest-branch-name)"
 
       # - name: Fetch commit digest of latest release
       #  run: |
       #    curl -sL https://api.github.com/repos/Requarks/wiki/releases/latest | \
-      #    jq -r ".target_commitish" > /tmp/wikijs-latest-commit-digest
+      #      jq -r ".target_commitish" > /tmp/wikijs-latest-commit-digest
       #    echo "REMOTE_COMMIT_DIGEST=$(cat /tmp/wikijs-latest-commit-digest)" >> $GITHUB_ENV
 
       - name: Checkout repository (to get cross build Dockerfile)
@@ -76,40 +76,21 @@ jobs:
            ls -lR ..
            cp -p package.json package.json.orig
            mv package.json pkg-temp.json
-           jq -r '.dev |= false' pkg-temp.json | sed -E -e "s|\"version\": \"2.0.0\",|\"version\": \"${{env.REMOTE_BRANCH_NAME}}\",|" -e 's|"releaseDate": "2019-01-01T01:01:01.000Z",|"releaseDate": "2021-12-07T16:00:00.000Z",|' > package.json
+           export BUILD_TS=$(date +'%Y-%m-%d' --utc)
+           jq -r '.dev |= false' pkg-temp.json | sed -E -e "s|\"version\": \"2.0.0\",|\"version\": \"${{env.REMOTE_BRANCH_NAME}}\",|" -e "s|\"releaseDate\": \"2019-01-01T01:01:01.000Z\",|\"releaseDate\": \"${BUILD_TS}T00:00:00.000Z\",|" > package.json
            rm pkg-temp.json
            cat package.json
-           yarn upgrade apollo-server@2.25.3 apollo-server-express@2.25.3 json-schema@0.4.0 nth-check@2.0.1 highlight.js@10.7.3 node-uuid@1.4.8 ansi-regex@5.0.1 ws@7.4.6 js-yaml@3.14.1 underscore@1.13.1
+           yarn upgrade apollo-server@2.25.3 apollo-server-express@2.25.3 json-schema@0.4.0 nth-check@2.0.1 highlight.js@10.7.3 node-uuid@1.4.8 ansi-regex@5.0.1 ws@7.4.6 js-yaml@3.14.1 underscore@1.13.1 debug@4.3.3
            if [ -e yarn-error.log ]; then cat yarn-error.log; fi
 
       # These files appear again after the container is built
-      - name: Remove uncessary files
-        working-directory: ./wiki
-        run: |
-          set -eux && \
-          rm -f -v \
-            ./node_modules/connect-session-knex/node_modules/knex/scripts/docker-compose.yml \
-            ./node_modules/connect-session-knex/node_modules/knex/scripts/stress-test/docker-compose.yml \
-            ./node_modules/cpu-features/deps/cpu_features/.github/workflows/Dockerfile \
-            ./node_modules/getos/Dockerfile \
-            ./node_modules/getos/tests/alpine/3.3/Dockerfile \
-            ./node_modules/getos/tests/debian/7.3/Dockerfile \
-            ./node_modules/getos/tests/debian/7.4/Dockerfile \
-            ./node_modules/getos/tests/debian/7.5/Dockerfile \
-            ./node_modules/getos/tests/debian/7.6/Dockerfile \
-            ./node_modules/getos/tests/fedora/20/Dockerfile \
-            ./node_modules/getos/tests/ubuntu/13.10/Dockerfile \
-            ./node_modules/getos/tests/ubuntu/14.04/Dockerfile \
-            ./node_modules/knex/scripts/docker-compose.yml \
-            ./node_modules/knex/scripts/stress-test/docker-compose.yml \
-            ./node_modules/sqlite3/Dockerfile \
-            ./node_modules/sqlite3/tools/docker/architecture/linux-arm64/Dockerfile \
-            ./node_modules/sqlite3/tools/docker/architecture/linux-arm/Dockerfile \
-            ./node_modules/ssh2-promise/pretest/docker-compose.yml \
-            ./node_modules/ssh2-promise/pretest/ssh/Dockerfile \
-            ./node_modules/ssh2/test/fixtures/id_dsa \
-            ./node_modules/ssh2/test/fixtures/id_ecdsa \
-            ./node_modules/ssh2/test/fixtures/id_rsa
+      # Remove them inside Dockerfile
+      # - name: Remove uncessary files
+      #   working-directory: ./wiki
+      #   run: |
+      #     set -eux && \
+      #     rm -rf -v \
+      #       ./node_modules (.pem, .key, .Dockerfiles, etc)
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1

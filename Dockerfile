@@ -85,29 +85,31 @@ COPY --chown=node:node ./LICENSE ./LICENSE
 
 # Remove un-necessary files
 RUN set -eux && \
-    rm -f -v \
-        ./node_modules/connect-session-knex/node_modules/knex/scripts/docker-compose.yml \
-        ./node_modules/connect-session-knex/node_modules/knex/scripts/stress-test/docker-compose.yml \
-        ./node_modules/cpu-features/deps/cpu_features/.github/workflows/Dockerfile \
-        ./node_modules/getos/Dockerfile \
-        ./node_modules/getos/tests/alpine/3.3/Dockerfile \
-        ./node_modules/getos/tests/debian/7.3/Dockerfile \
-        ./node_modules/getos/tests/debian/7.4/Dockerfile \
-        ./node_modules/getos/tests/debian/7.5/Dockerfile \
-        ./node_modules/getos/tests/debian/7.6/Dockerfile \
-        ./node_modules/getos/tests/fedora/20/Dockerfile \
-        ./node_modules/getos/tests/ubuntu/13.10/Dockerfile \
-        ./node_modules/getos/tests/ubuntu/14.04/Dockerfile \
-        ./node_modules/knex/scripts/docker-compose.yml \
-        ./node_modules/knex/scripts/stress-test/docker-compose.yml \
-        ./node_modules/sqlite3/Dockerfile \
-        ./node_modules/sqlite3/tools/docker/architecture/linux-arm64/Dockerfile \
-        ./node_modules/sqlite3/tools/docker/architecture/linux-arm/Dockerfile \
-        ./node_modules/ssh2-promise/pretest/docker-compose.yml \
-        ./node_modules/ssh2-promise/pretest/ssh/Dockerfile \
-        ./node_modules/ssh2/test/fixtures/id_dsa \
-        ./node_modules/ssh2/test/fixtures/id_ecdsa \
-        ./node_modules/ssh2/test/fixtures/id_rsa
+    rm -rf -v \
+      ./node_modules/connect-session-knex/node_modules/knex/scripts/docker-compose.yml \
+      ./node_modules/connect-session-knex/node_modules/knex/scripts/stress-test/docker-compose.yml \
+      ./node_modules/cpu-features/deps/cpu_features/.github/workflows/Dockerfile \
+      ./node_modules/getos/Dockerfile \
+      ./node_modules/getos/tests \
+      ./node_modules/knex/scripts/docker-compose.yml \
+      ./node_modules/knex/scripts/stress-test/docker-compose.yml \
+      ./node_modules/sqlite3/Dockerfile \
+      ./node_modules/sqlite3/tools/docker/architecture/linux-arm64/Dockerfile \
+      ./node_modules/sqlite3/tools/docker/architecture/linux-arm/Dockerfile \
+      ./node_modules/ssh2-promise/pretest/docker-compose.yml \
+      ./node_modules/ssh2-promise/pretest/ssh/Dockerfile \
+      ./node_modules/ssh2/test \
+      ./node_modules/hpagent/test/ssl.key \
+      ./node_modules/node-gyp/test/fixtures/server.key \
+      ./node_modules/passport-saml/test/static/acme_tools_com.key \
+      ./node_modules/passport-saml/test/static/key.pem \
+      ./node_modules/passport-saml/test/static/testshib \
+      ./node_modules/pem-jwk/test/priv.pem \
+      ./node_modules/ssh2-promise/spec/test.pem \
+      ./node_modules/webfinger/test/data/localhost.key \
+      ./node_modules/xml-crypto/example/client.pem \
+      ./node_modules/xml-encryption/test/test-auth0.key \
+      ./node_modules/xml-encryption/test/test-cbc128.key
 
 USER node
 
