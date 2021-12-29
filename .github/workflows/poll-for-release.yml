@@ -13,6 +13,7 @@ jobs:
           echo "REMOTE_BRANCH_NAME=$(cat /tmp/wikijs-latest-branch-name)" >> $GITHUB_ENV
           curl -sL https://github.com/patrickdung/wikijs-crossbuild/raw/main/release-versions/wikijs-latest.txt -o /tmp/wikijs-local-branch-name
           echo "LOCAL_BRANCH_NAME=$(cat /tmp/wikijs-local-branch-name)" >> $GITHUB_ENV
+          if [ $(cat /tmp/wikijs-latest-branch-name) == "null" ] || [ $(cat /tmp/wikijs-latest-branch-name) == null ] || [ $(cat /tmp/wikijs-latest-branch-name) == "" ] || [ -z /tmp/wikijs-latest-branch-name ] ; then exit 1 ; else echo "Remote Branch Name is not null"; fi
       - name: Check for modified files
         id: git-check
         run: |
