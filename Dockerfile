@@ -50,7 +50,11 @@ RUN set -eux && \
 # --- Release ---
 # ===============
 FROM docker.io/node:16-bullseye-slim
-#LABEL maintainer="requarks.io"
+
+ARG LABEL_IMAGE_URL
+ARG LABEL_IMAGE_SOURCE
+LABEL org.opencontainers.image.url=${LABEL_IMAGE_URL}
+LABEL org.opencontainers.image.source=${LABEL_IMAGE_SOURCE}
 
 ##ARG ARCH=${TARGETARCH:-$ARCH}
 

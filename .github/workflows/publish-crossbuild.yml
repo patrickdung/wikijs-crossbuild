@@ -1,5 +1,7 @@
 name: Release using cross build
 
+# DCT was not enabled becuase the node images are not signed
+
 on:
   push:
     branches:
@@ -7,10 +9,41 @@ on:
     # paths:
     # - 'release-versions/*'
 env:
-  CONTAINER_REGISTRY_BASE_URI: registry.gitlab.com/patrickdung/wikijs
-
+  CARGO_TERM_COLOR: always
+  # CONTAINER_REGISTRY: quay.io
+  # CONTAINER_REPOSITORY: patrickdung/docker-images-wikijs
+  CONTAINER_REGISTRY: ghcr.io
+  # ## GH Repository must be lower case, when using in GH action
+  CONTAINER_REPOSITORY: ${{ github.repository }}
+  ORIGINAL_SOURCECODE_URL: https://github.com/Requarks/wiki
 jobs:
+
+  init-env:
+    name: Set env outputs
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      actions: none
+      checks: none
+      contents: none
+      deployments: none
+      issues: none
+      packages: none
+      pull-requests: none
+      repository-projects: none
+      security-events: none
+      statuses: none
+      # id-token: write # needed for signing the images with GitHub OIDC **not production ready**
+    outputs:
+      container_registry_base_uri: ${{ steps.set-env.outputs.container_registry_base_uri }}
+    steps:
+      - name: Set env for later jobs
+        id: set-env
+        run: |
+          echo "::set-output name=container_registry_base_uri::$(echo $CONTAINER_REGISTRY/$(echo $CONTAINER_REPOSITORY|tr 'A-Z' 'a-z'))"
+
   build-docker-image:
+    needs: [init-env]
     name: Build Docker Images
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -28,14 +61,9 @@ jobs:
       # id-token: 'read'
     outputs:
       remote_branch_name: ${{ steps.get-remote-branch-name.outputs.remote_branch_name }}
-      container_registry_base_uri: ${{ steps.set-env.outputs.container_registry_base_uri }}
       container_digest_amd64: ${{ steps.get-container-digest-amd64.outputs.container_digest }}
       container_digest_arm64: ${{ steps.get-container-digest-arm64.outputs.container_digest }}
     steps:
-      - name: Set env for later jobs
-        id: set-env
-        run: |
-          echo "::set-output name=container_registry_base_uri::$(echo $CONTAINER_REGISTRY_BASE_URI)"
       - name: Get branch name of latest release from official repo
         id: get-remote-branch-name
         run: |
@@ -98,12 +126,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Login to container registry provider
+      - name: Login to Registry provider
         uses: docker/login-action@v1
         with:
-          registry: registry.gitlab.com
-          username: ${{ secrets.GITLAB_USERNAME }}
-          password: ${{ secrets.GITLAB_TOKEN }}
+          registry: ${{ env.CONTAINER_REGISTRY }}
+          # GitLab
+          # username: ${{ secrets.GITLAB_USERNAME }}
+          # password: ${{ secrets.GITLAB_TOKEN }}
+          # Quay.io
+          # username: ${{ secrets.QUAY_USERNAME }}
+          # password: ${{ secrets.QUAY_TOKEN }}
+          # GitHub
+          username: ${{ github.actor }}
+          password: ${{ secrets.PUBLISH_TOKEN }}
 
       - name: Install Cosign GH action
         uses: sigstore/cosign-installer@main
@@ -117,38 +152,37 @@ jobs:
         with:
           context: ./wiki
           file: ./Dockerfile
-          # ##build-args: |
           # ## ARCH=${{ env.TO_BE_FIXED }}
+          build-args: |
+            LABEL_IMAGE_URL=${{ env.ORIGINAL_SOURCECODE_URL }}
+            LABEL_IMAGE_SOURCE=https://github.com/${{ github.repository }}
           platforms: linux/amd64,linux/arm64
           push: true
-          # registry.gitlab.com/patrickdung/wikijs:${{ env.REMOTE_BRANCH_NAME }}
           tags: |
-            ${{env.CONTAINER_REGISTRY_BASE_URI}}:${{ env.REMOTE_BRANCH_NAME }}
+            ${{ needs.init-env.outputs.container_registry_base_uri }}:${{ env.REMOTE_BRANCH_NAME }}
 
       - name: "Get the digest of container (amd64)"
         id: get-container-digest-amd64
         run: |
-          skopeo inspect --raw docker://${{env.CONTAINER_REGISTRY_BASE_URI}}:${{env.REMOTE_BRANCH_NAME}} | \
+          skopeo inspect --raw docker://${{needs.init-env.outputs.container_registry_base_uri}}:${{env.REMOTE_BRANCH_NAME}} | \
             jq -r '.manifests[] | select(.platform .architecture=="amd64" and .platform .os=="linux") | .digest' > /tmp/container-digest-amd64
           echo "::set-output name=container_digest::$(cat /tmp/container-digest-amd64)"
 
       - name: "Get the digest of container (arm64)"
         id: get-container-digest-arm64
         run: |
-          skopeo inspect --raw docker://${{env.CONTAINER_REGISTRY_BASE_URI}}:${{env.REMOTE_BRANCH_NAME}} | \
+          skopeo inspect --raw docker://${{needs.init-env.outputs.container_registry_base_uri}}:${{env.REMOTE_BRANCH_NAME}} | \
             jq -r '.manifests[] | select(.platform .architecture=="arm64" and .platform .os=="linux") | .digest' > /tmp/container-digest-arm64
           echo "::set-output name=container_digest::$(cat /tmp/container-digest-arm64)"
 
       - name: Use Cosign to sign the image recursively
-        env:
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PRIVATE_KEY_PASSWORD }}
         run: |
-          echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-          # Sign the multiarch images, the signature is also pushed to the registry
-          cosign sign --recursive --key ./cosign.key "${{env.CONTAINER_REGISTRY_BASE_URI}}:${{ env.REMOTE_BRANCH_NAME }}"
+          echo -n "${{ secrets.COSIGN_PRIVATE_KEY_PASSWORD }}" | \
+            cosign sign --recursive --key <(echo -n "${{ secrets.COSIGN_PRIVATE_KEY }}") \
+            "${{ needs.init-env.outputs.container_registry_base_uri }}:${{ env.REMOTE_BRANCH_NAME }}"
 
   build-sbom-and-scanning:
-    needs: [build-docker-image]
+    needs: [init-env, build-docker-image]
     name: Build SBOM and image scanning
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -173,9 +207,9 @@ jobs:
       matrix:
         include:
           - arch: amd64
-            platform_image_uri: "${{needs.build-docker-image.outputs.container_registry_base_uri}}@${{ needs.build-docker-image.outputs.container_digest_amd64 }}"
+            platform_image_uri: "${{needs.init-env.outputs.container_registry_base_uri}}@${{ needs.build-docker-image.outputs.container_digest_amd64 }}"
           - arch: arm64
-            platform_image_uri: "${{needs.build-docker-image.outputs.container_registry_base_uri}}@${{ needs.build-docker-image.outputs.container_digest_arm64 }}"
+            platform_image_uri: "${{needs.init-env.outputs.container_registry_base_uri}}@${{ needs.build-docker-image.outputs.container_digest_arm64 }}"
     steps:
 
       - name: Set env REMOTE_BRANCH_NAME
@@ -191,9 +225,16 @@ jobs:
       - name: Login to Registry provider
         uses: docker/login-action@v1
         with:
-          registry: registry.gitlab.com
-          username: ${{ secrets.GITLAB_USERNAME }}
-          password: ${{ secrets.GITLAB_TOKEN }}
+          registry: ${{ env.CONTAINER_REGISTRY }}
+          # GitLab
+          # username: ${{ secrets.GITLAB_USERNAME }}
+          # password: ${{ secrets.GITLAB_TOKEN }}
+          # Quay.io
+          # username: ${{ secrets.QUAY_USERNAME }}
+          # password: ${{ secrets.QUAY_TOKEN }}
+          # GitHub
+          username: ${{ github.actor }}
+          password: ${{ secrets.PUBLISH_TOKEN }}
 
       - name: Install Cosign GH action
         uses: sigstore/cosign-installer@main
@@ -242,16 +283,12 @@ jobs:
       #    name: ${{env.ANCHORE_SBOM_ACTION_PRIOR_ARTIFACT}}
 
       - name: Create SBOM attestation
-        env:
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PRIVATE_KEY_PASSWORD }}
-          # ##SBOM_FILE: ./container-sbom.spdx.json
-          # ##SBOM_FILE: ${{env.ANCHORE_SBOM_ACTION_PRIOR_ARTIFACT}}
         run: |
-          echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-          # CONTAINER_IMAGE=${{matrix.platform_image_uri}}
           # Create SBOM attestation and push it to the container registry
-          # ##cosign attest --predicate "$SBOM_FILE" --key ./cosign.key "$CONTAINER_IMAGE"
-          cosign attest --predicate "${{matrix.arch}}-${{env.ANCHORE_SBOM_ACTION_PRIOR_ARTIFACT}}" --key ./cosign.key "${{matrix.platform_image_uri}}"
+          echo -n "${{ secrets.COSIGN_PRIVATE_KEY_PASSWORD }}" | \
+            cosign attest --predicate "${{matrix.arch}}-${{env.ANCHORE_SBOM_ACTION_PRIOR_ARTIFACT}}" \
+            --key <(echo -n "${{ secrets.COSIGN_PRIVATE_KEY }}") \
+            "${{ matrix.platform_image_uri }}"
 
       - name: Install Grype
         run: |
