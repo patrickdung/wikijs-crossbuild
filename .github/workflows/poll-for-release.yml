@@ -9,7 +9,7 @@ jobs:
       - name: Fetch branch name of latest version
         run: |
           curl -sL https://api.github.com/repos/Requarks/wiki/releases/latest | \
-          jq -r ".tag_name" > /tmp/wikijs-latest-branch-name
+            jq -r ".[].tag_name" | grep -v rc | sort -nr -t. -k 1 -k 2 -k 3 | head -n 1 > /tmp/wikijs-latest-branch-name
           echo "REMOTE_BRANCH_NAME=$(cat /tmp/wikijs-latest-branch-name)" >> $GITHUB_ENV
           curl -sL https://github.com/patrickdung/wikijs-crossbuild/raw/main/release-versions/wikijs-latest.txt -o /tmp/wikijs-local-branch-name
           echo "LOCAL_BRANCH_NAME=$(cat /tmp/wikijs-local-branch-name)" >> $GITHUB_ENV
