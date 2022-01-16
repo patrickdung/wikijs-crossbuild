@@ -248,10 +248,10 @@ jobs:
       - name: "Fetch branch name of latest release versions Other software"
         run: |
           curl -sL https://api.github.com/repos/anchore/syft/releases | \
-            jq -r ".[].tag_name" | grep -v rc | sort -nr -t. -k 1 -k 2 -k 3 | head -n 1 | sed -E 's|^v||' > /tmp/syft-latest-branch-name
+            jq -r ".[].tag_name" | grep -v rc | sort -r -V | head -n 1 | sed -E 's|^v||' > /tmp/syft-latest-branch-name
           echo "SYFT_VERSION=$(cat /tmp/syft-latest-branch-name)" >> $GITHUB_ENV
           curl -sL https://api.github.com/repos/anchore/grype/releases | \
-            jq -r ".[].tag_name" | grep -v rc | sort -nr -t. -k 1 -k 2 -k 3 | head -n 1 | sed -E 's|^v||' > /tmp/grype-latest-branch-name
+            jq -r ".[].tag_name" | grep -v rc | sort -r -V | head -n 1 | sed -E 's|^v||' > /tmp/grype-latest-branch-name
           echo "GRYPE_VERSION=$(cat /tmp/grype-latest-branch-name)" >> $GITHUB_ENV
 
       - name: Install Syft
