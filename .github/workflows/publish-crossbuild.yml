@@ -112,7 +112,7 @@ jobs:
            jq -r '.dev |= false' pkg-temp.json | sed -E -e "s|\"version\": \"2.0.0\",|\"version\": \"${{env.REMOTE_BRANCH_NAME}}\",|" -e "s|\"releaseDate\": \"2019-01-01T01:01:01.000Z\",|\"releaseDate\": \"${BUILD_TS}T00:00:00.000Z\",|" > package.json
            rm pkg-temp.json
            cat package.json
-           yarn upgrade apollo-server@2.25.3 apollo-server-express@2.25.3 json-schema@0.4.0 nth-check@2.0.1 highlight.js@10.7.3 node-uuid@1.4.8 ansi-regex@5.0.1 ws@7.4.6 js-yaml@3.14.1 underscore@1.13.2 debug@4.3.4
+           yarn upgrade apollo-server@2.25.3 apollo-server-express@2.25.3 json-schema@0.4.0 nth-check@2.0.1 highlight.js@10.7.3 node-uuid@1.4.8 ansi-regex@5.0.1 ws@7.4.6 js-yaml@3.14.1 underscore@1.13.2 debug@4.3.4 moment@2.29.2
            if [ -e yarn-error.log ]; then cat yarn-error.log; fi
 
       # These files appear again after the container is built
