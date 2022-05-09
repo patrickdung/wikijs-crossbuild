@@ -8,14 +8,6 @@
 # =========================
 # --- BUILD NPM MODULES ---
 # =========================
-# Can't use node:16
-# 1) # Compiling Client Assets
-#node: ../src/coroutine.cc:134: void* find_thread_id_key(void*): Assertion `thread_id_key != 0x7777' failed.
-#qemu: uncaught target signal 6 (Aborted) - core dumped
-#Aborted
-#error Command failed with exit code 134.
-# May be related to https://stackoverflow.com/questions/67330252/thread-id-key-0x7777-function-find-thread-id-key-file-src-coroutine-cc
-
 FROM docker.io/node:16-bullseye-slim AS assets
 
 #  apk add yarn g++ make python --no-cache
@@ -49,7 +41,9 @@ RUN set -eux && \
 # ===============
 # --- Release ---
 # ===============
-FROM docker.io/node:18-bullseye-slim
+## Cannot use Node 18
+## package.json uses deprecated subpath folder mappings in exports
+FROM docker.io/node:16-bullseye-slim
 
 ARG LABEL_IMAGE_URL
 ARG LABEL_IMAGE_SOURCE
