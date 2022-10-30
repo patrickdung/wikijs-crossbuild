@@ -29,14 +29,14 @@ COPY ./.eslintignore ./.eslintignore
 COPY ./.eslintrc.yml ./.eslintrc.yml
 ##COPY ./yarn.lock ./yarn.lock
 
-ENV UV_THREADPOOL_SIZE=128
+ENV UV_THREADPOOL_SIZE=256
 # https://stackoverflow.com/questions/35387264/node-js-request-module-getting-etimedout-and-esockettimedout
 RUN set -eux && \
   yarn cache clean && \
-  yarn --frozen-lockfile --non-interactive --network-timeout 100000 && \
-  yarn build --network-timeout 100000 && \
+  yarn --frozen-lockfile --non-interactive --network-timeout 200000 && \
+  yarn build --network-timeout 200000 && \
   rm -rf /wiki/node_modules && \
-  yarn --production --frozen-lockfile --non-interactive --network-timeout 100000
+  yarn --production --frozen-lockfile --non-interactive --network-timeout 200000
 
 # ===============
 # --- Release ---
