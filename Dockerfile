@@ -41,7 +41,8 @@ RUN set -eux && \
 # ===============
 # --- Release ---
 # ===============
-## Cannot use Node 18
+## https://docs.requarks.io/install/requirements
+## Cannot use Node 18 on Wikijs 2.x
 ## package.json uses deprecated subpath folder mappings in exports
 FROM docker.io/node:16-bullseye-slim
 
