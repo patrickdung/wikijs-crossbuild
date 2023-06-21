@@ -8,7 +8,7 @@
 # =========================
 # --- BUILD NPM MODULES ---
 # =========================
-FROM docker.io/node:16-bullseye-slim AS assets
+FROM docker.io/node:16-bookworm-slim AS assets
 
 #  apk add yarn g++ make python --no-cache
     #apt-get -y upgrade && \

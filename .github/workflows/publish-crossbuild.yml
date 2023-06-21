@@ -44,7 +44,7 @@ jobs:
       - name: Set env for later jobs
         id: set-env
         run: |
-          echo "::set-output name=container_registry_base_uri::$(echo $CONTAINER_REGISTRY/$(echo $CONTAINER_REPOSITORY|tr 'A-Z' 'a-z'))"
+          echo "container_registry_base_uri=$(echo $CONTAINER_REGISTRY/$(echo $CONTAINER_REPOSITORY|tr 'A-Z' 'a-z'))" >> $GITHUB_OUTPUT
 
   build-docker-image:
     needs: [init-env]
@@ -74,7 +74,7 @@ jobs:
           curl -sL https://api.github.com/repos/Requarks/wiki/releases/latest | \
             jq -r ".tag_name" > /tmp/wikijs-latest-branch-name
           echo "REMOTE_BRANCH_NAME=$(cat /tmp/wikijs-latest-branch-name)" >> $GITHUB_ENV
-          echo "::set-output name=remote_branch_name::$(cat /tmp/wikijs-latest-branch-name)"
+          echo "remote_branch_name=$(cat /tmp/wikijs-latest-branch-name)" >> $GITHUB_OUTPUT
 
       # - name: Fetch commit digest of latest release
       #  run: |
@@ -171,14 +171,14 @@ jobs:
         run: |
           skopeo inspect --raw docker://${{needs.init-env.outputs.container_registry_base_uri}}:${{env.REMOTE_BRANCH_NAME}} | \
             jq -r '.manifests[] | select(.platform .architecture=="amd64" and .platform .os=="linux") | .digest' > /tmp/container-digest-amd64
-          echo "::set-output name=container_digest::$(cat /tmp/container-digest-amd64)"
+          echo "container_digest=$(cat /tmp/container-digest-amd64)" >> $GITHUB_OUTPUT
 
       - name: "Get the digest of container (arm64)"
         id: get-container-digest-arm64
         run: |
           skopeo inspect --raw docker://${{needs.init-env.outputs.container_registry_base_uri}}:${{env.REMOTE_BRANCH_NAME}} | \
             jq -r '.manifests[] | select(.platform .architecture=="arm64" and .platform .os=="linux") | .digest' > /tmp/container-digest-arm64
-          echo "::set-output name=container_digest::$(cat /tmp/container-digest-arm64)"
+          echo "container_digest=$(cat /tmp/container-digest-arm64)" >> $GITHUB_OUTPUT
 
       - name: Use Cosign to sign the image recursively
         run: |
