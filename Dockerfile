@@ -17,7 +17,7 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN set -eux && \
     apt-get -y update && \
     apt-get -y install --no-install-suggests \
-    yarn make gcc g++ pkg-config python cmake sed bash
+    yarn make gcc g++ pkg-config python3 cmake sed bash
 
 WORKDIR /wiki
 
@@ -44,7 +44,7 @@ RUN set -eux && \
 ## https://docs.requarks.io/install/requirements
 ## Cannot use Node 18 on Wikijs 2.x
 ## package.json uses deprecated subpath folder mappings in exports
-FROM docker.io/node:16-bullseye-slim
+FROM docker.io/node:16-bookworm-slim
 
 ARG LABEL_IMAGE_URL
 ARG LABEL_IMAGE_SOURCE
