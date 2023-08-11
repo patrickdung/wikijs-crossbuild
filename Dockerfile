@@ -8,7 +8,7 @@
 # =========================
 # --- BUILD NPM MODULES ---
 # =========================
-FROM docker.io/node:16-bookworm-slim AS assets
+FROM docker.io/node:18-bookworm-slim AS assets
 
 #  apk add yarn g++ make python --no-cache
     #apt-get -y upgrade && \
@@ -24,6 +24,7 @@ WORKDIR /wiki
 COPY ./client ./client
 COPY ./dev ./dev
 COPY ./package.json ./package.json
+COPY ./patches ./patches
 COPY ./.babelrc ./.babelrc
 COPY ./.eslintignore ./.eslintignore
 COPY ./.eslintrc.yml ./.eslintrc.yml
@@ -36,15 +37,14 @@ RUN set -eux && \
   yarn --frozen-lockfile --non-interactive --network-timeout 200000 && \
   yarn build --network-timeout 200000 && \
   rm -rf /wiki/node_modules && \
-  yarn --production --frozen-lockfile --non-interactive --network-timeout 200000
+  yarn --production --frozen-lockfile --non-interactive --network-timeout 200000 && \
+  yarn patch-package --network-timeout 200000
 
 # ===============
 # --- Release ---
 # ===============
-## https://docs.requarks.io/install/requirements
-## Cannot use Node 18 on Wikijs 2.x
-## package.json uses deprecated subpath folder mappings in exports
-FROM docker.io/node:16-bookworm-slim
+## 2.5.300 allowed nodejs 18,20
+FROM docker.io/node:18-bookworm-slim
 
 ARG LABEL_IMAGE_URL
 ARG LABEL_IMAGE_SOURCE
