@@ -371,6 +371,10 @@ jobs:
           image: ${{matrix.platform_image_uri}}
           args: --file=Dockerfile
 
+      # https://github.com/github/codeql-action/issues/2187
+      - name: Replace security-severity undefined for license-related findings 
+        run: sed -i 's/"security-severity": "undefined"/"security-severity": "0"/g' snyk.sarif
+
       - name: Rename results.sarif with architecture name
         run: |
           mv snyk.sarif ${{matrix.arch}}-container-snyk-results.sarif
