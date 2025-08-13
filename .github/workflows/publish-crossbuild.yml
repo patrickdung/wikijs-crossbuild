@@ -145,10 +145,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.PUBLISH_TOKEN }}
 
-      - name: Install Cosign GH action
-        uses: sigstore/cosign-installer@main
-        with:
-          cosign-release: 'v1.13.1'
+      #- name: Install Cosign GH action
+      #  uses: sigstore/cosign-installer@main
+      #  with:
+      #    cosign-release: 'v1.13.1'
 
       - name: Build and push to container registry
         uses: docker/build-push-action@v5
@@ -180,11 +180,11 @@ jobs:
             jq -r '.manifests[] | select(.platform .architecture=="arm64" and .platform .os=="linux") | .digest' > /tmp/container-digest-arm64
           echo "container_digest=$(cat /tmp/container-digest-arm64)" >> $GITHUB_OUTPUT
 
-      - name: Use Cosign to sign the image recursively
-        run: |
-          echo -n "${{ secrets.COSIGN_PRIVATE_KEY_PASSWORD }}" | \
-            cosign sign --recursive --key <(echo -n "${{ secrets.COSIGN_PRIVATE_KEY }}") \
-            "${{ needs.init-env.outputs.container_registry_base_uri }}:${{ env.REMOTE_BRANCH_NAME }}"
+      #- name: Use Cosign to sign the image recursively
+      #  run: |
+      #    echo -n "${{ secrets.COSIGN_PRIVATE_KEY_PASSWORD }}" | \
+      #      cosign sign --recursive --key <(echo -n "${{ secrets.COSIGN_PRIVATE_KEY }}") \
+      #      "${{ needs.init-env.outputs.container_registry_base_uri }}:${{ env.REMOTE_BRANCH_NAME }}"
 
   build-sbom-and-scanning:
     needs: [init-env, build-docker-image]
@@ -241,10 +241,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.PUBLISH_TOKEN }}
 
-      - name: Install Cosign GH action
-        uses: sigstore/cosign-installer@main
-        with:
-          cosign-release: 'v1.13.1'
+      #- name: Install Cosign GH action
+      #  uses: sigstore/cosign-installer@main
+      #  with:
+      #    cosign-release: 'v1.13.1'
 
       - name: "Fetch branch name of latest release versions Other software"
         run: |
@@ -287,13 +287,13 @@ jobs:
       #    #name: container-sbom.spdx.json
       #    name: ${{env.ANCHORE_SBOM_ACTION_PRIOR_ARTIFACT}}
 
-      - name: Create SBOM attestation
-        run: |
-          # Create SBOM attestation and push it to the container registry
-          echo -n "${{ secrets.COSIGN_PRIVATE_KEY_PASSWORD }}" | \
-            cosign attest --predicate "${{matrix.arch}}-${{env.ANCHORE_SBOM_ACTION_PRIOR_ARTIFACT}}" \
-            --key <(echo -n "${{ secrets.COSIGN_PRIVATE_KEY }}") \
-            "${{ matrix.platform_image_uri }}"
+      #- name: Create SBOM attestation
+      #  run: |
+      #    # Create SBOM attestation and push it to the container registry
+      #    echo -n "${{ secrets.COSIGN_PRIVATE_KEY_PASSWORD }}" | \
+      #      cosign attest --predicate "${{matrix.arch}}-${{env.ANCHORE_SBOM_ACTION_PRIOR_ARTIFACT}}" \
+      #      --key <(echo -n "${{ secrets.COSIGN_PRIVATE_KEY }}") \
+      #      "${{ matrix.platform_image_uri }}"
 
       - name: Install Grype
         run: |
