@@ -113,7 +113,7 @@ jobs:
            rm pkg-temp.json
            cat package.json
            ## v2.5.296 should update debug@4.3.4
-           yarn upgrade apollo-server@2.25.4 apollo-server-express@2.25.4 json-schema@0.4.0 nth-check@2.0.1 highlight.js@10.7.3 node-uuid@1.4.8 ansi-regex@5.0.1 ws@7.4.6 js-yaml@3.14.1 underscore@1.13.6 debug@4.3.4 @xmldom/xmldom@0.7.9
+           yarn upgrade apollo-server@2.25.4 apollo-server-express@2.25.4 json-schema@0.4.0 nth-check@2.0.1 highlight.js@10.7.3 node-uuid@1.4.8 ansi-regex@5.0.1 ws@7.4.6 js-yaml@3.14.1 underscore@1.13.7 debug@4.3.7 @xmldom/xmldom@0.7.11
            if [ -e yarn-error.log ]; then cat yarn-error.log; fi
 
       # These files appear again after the container is built

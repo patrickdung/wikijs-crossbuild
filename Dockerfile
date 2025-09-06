@@ -8,7 +8,8 @@
 # =========================
 # --- BUILD NPM MODULES ---
 # =========================
-FROM docker.io/node:20-bookworm-slim AS assets
+#FROM docker.io/node:20-bookworm-slim AS assets
+FROM public.ecr.aws/docker/library/node:20-trixie-slim AS assets
 
 #  apk add yarn g++ make python --no-cache
     #apt-get -y upgrade && \
@@ -44,7 +45,8 @@ RUN set -eux && \
 # --- Release ---
 # ===============
 ## 2.5.305 es8 module needs nodejs 20
-FROM docker.io/node:20-bookworm-slim
+#FROM docker.io/node:20-bookworm-slim
+FROM public.ecr.aws/docker/library/node:20-trixie-slim
 
 ARG LABEL_IMAGE_URL
 ARG LABEL_IMAGE_SOURCE
