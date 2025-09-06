@@ -18,7 +18,7 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN set -eux && \
     apt-get -y update && \
     apt-get -y install --no-install-suggests \
-    yarn make gcc g++ pkg-config python3 cmake sed bash
+    yarnpkg make gcc g++ pkg-config python3 cmake sed bash
 
 WORKDIR /wiki
 
