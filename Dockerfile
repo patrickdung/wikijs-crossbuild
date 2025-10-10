@@ -14,7 +14,7 @@ FROM public.ecr.aws/docker/library/node:20-trixie-slim AS assets
 #  apk add yarn g++ make python --no-cache
     #apt-get -y upgrade && \
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 RUN set -eux && \
     apt-get -y update && \
     apt-get -y install --no-install-suggests \
@@ -59,9 +59,10 @@ LABEL org.opencontainers.image.source=${LABEL_IMAGE_SOURCE}
 # apk openssh <> deb openssh-client
 # apk sqlite <> deb sqlite3
 # After installed, wikijs GUI said pandoc is not compatible with this system (arm64 on Docker)
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 RUN set -eux && \
     apt-get -y update && \
+    apt-get -y upgrade && \
     apt-get -y install --no-install-suggests \
       bash curl git openssh-client gnupg sqlite3 \
       procps vim-tiny libjemalloc2 && \
