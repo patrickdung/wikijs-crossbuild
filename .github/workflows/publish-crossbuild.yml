@@ -19,7 +19,7 @@ env:
   CONTAINER_REGISTRY: ghcr.io
   # ## GH Repository must be lower case, when using in GH action
   CONTAINER_REPOSITORY: ${{ github.repository }}
-  ORIGINAL_SOURCECODE_URL: https://github.com/Requarks/wiki
+  ORIGINAL_SOURCECODE_URL: https://github.com/requarks/wiki-v2
 jobs:
 
   init-env:
@@ -71,14 +71,14 @@ jobs:
       - name: Get branch name of latest release from official repo
         id: get-remote-branch-name
         run: |
-          curl -sL https://api.github.com/repos/Requarks/wiki/releases/latest | \
+          curl -sL https://api.github.com/repos/requarks/wiki-v2/releases/latest | \
             jq -r ".tag_name" > /tmp/wikijs-latest-branch-name
           echo "REMOTE_BRANCH_NAME=$(cat /tmp/wikijs-latest-branch-name)" >> $GITHUB_ENV
           echo "remote_branch_name=$(cat /tmp/wikijs-latest-branch-name)" >> $GITHUB_OUTPUT
 
       # - name: Fetch commit digest of latest release
       #  run: |
-      #    curl -sL https://api.github.com/repos/Requarks/wiki/releases/latest | \
+      #    curl -sL https://api.github.com/repos/requarks/wiki-v2/releases/latest | \
       #      jq -r ".target_commitish" > /tmp/wikijs-latest-commit-digest
       #    echo "REMOTE_COMMIT_DIGEST=$(cat /tmp/wikijs-latest-commit-digest)" >> $GITHUB_ENV
 
@@ -91,7 +91,7 @@ jobs:
       - name: Checkout repository (wikijs source code)
         uses: actions/checkout@v6
         with:
-          repository: Requarks/wiki
+          repository: requarks/wiki-v2
           ref: ${{ env.REMOTE_BRANCH_NAME }}
           path: wiki
 
